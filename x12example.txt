@@ -1,0 +1,131 @@
+form: X12
+2
+version: '004050'
+3
+imports: [ '/x12/004050/basedefs.esl' ]
+4
+id: '849'
+5
+name: 'Response to Product Transfer Account Adjustment'
+6
+class: 'CF'
+7
+heading: 
+8
+- { idRef: 'ST', position: '0100', usage: M }
+9
+- { idRef: 'BRC', position: '0200', usage: M }
+10
+- { idRef: 'CUR', position: '0220', usage: O }
+11
+- { idRef: 'AAA', position: '0300', usage: O, count: 10 }
+12
+- { idRef: 'NTE', position: '0400', usage: O, count: 10 }
+13
+- { idRef: 'REF', position: '0500', usage: O, count: 12 }
+14
+- { idRef: 'PER', position: '0600', usage: O, count: 3 }
+15
+- { idRef: 'DTM', position: '0700', usage: O, count: 10 }
+16
+- groupId: 'N1_Loop'
+17
+  count: 50
+18
+  usage: O
+19
+  items: 
+20
+  - { idRef: 'N1', position: '0800', usage: O }
+21
+  - { idRef: 'N2', position: '0900', usage: O, count: 2 }
+22
+  - { idRef: 'N3', position: '1000', usage: O, count: 2 }
+23
+  - { idRef: 'N4', position: '1100', usage: O }
+24
+  - { idRef: 'REF', position: '1200', usage: O, count: 12 }
+25
+  - { idRef: 'PER', position: '1300', usage: O, count: 3 }
+26
+detail: 
+27
+- groupId: 'CON_Loop'
+28
+  count: 10000
+29
+  usage: O
+30
+  items: 
+31
+  - { idRef: 'CON', position: '0100', usage: O }
+32
+  - { idRef: 'AAA', position: '0200', usage: O, count: 10 }
+33
+  - { idRef: 'REF', position: '0300', usage: O, count: 12 }
+34
+  - { idRef: 'PER', position: '0400', usage: O, count: 3 }
+35
+  - { idRef: 'DTM', position: '0500', usage: O, count: 10 }
+36
+  - groupId: 'N1_Loop'
+37
+    count: 50
+38
+    usage: O
+39
+    items: 
+40
+    - { idRef: 'N1', position: '0600', usage: O }
+41
+    - { idRef: 'N2', position: '0700', usage: O, count: 2 }
+42
+    - { idRef: 'N3', position: '0800', usage: O, count: 2 }
+43
+    - { idRef: 'N4', position: '0900', usage: O }
+44
+    - { idRef: 'REF', position: '1000', usage: O, count: 12 }
+45
+    - { idRef: 'PER', position: '1100', usage: O, count: 3 }
+46
+  - groupId: 'PAD_Loop'
+47
+    count: 1000
+48
+    usage: O
+49
+    items: 
+50
+    - { idRef: 'PAD', position: '1200', usage: O }
+51
+    - { idRef: 'LIN', position: '1300', usage: O }
+52
+    - { idRef: 'AAA', position: '1400', usage: O, count: 10 }
+53
+    - { idRef: 'PID', position: '1500', usage: O, count: 200 }
+54
+    - { idRef: 'MEA', position: '1600', usage: O, count: 40 }
+55
+    - { idRef: 'UIT', position: '1700', usage: O, count: 5 }
+56
+    - { idRef: 'QTY', position: '1800', usage: O, count: 5 }
+57
+    - { idRef: 'AMT', position: '1900', usage: O, count: 2 }
+58
+    - { idRef: 'RCD', position: '2000', usage: O }
+59
+    - { idRef: 'REF', position: '2100', usage: O, count: 12 }
+60
+    - { idRef: 'DTM', position: '2200', usage: O, count: 10 }
+61
+    - { idRef: 'CUR', position: '2300', usage: O }
+62
+    - { idRef: 'SSS', position: '2400', usage: O }
+63
+summary: 
+64
+- { idRef: 'CTT', position: '0100', usage: M }
+65
+- { idRef: 'AMT', position: '0200', usage: O, count: 5 }
+66
+- { idRef: 'SE', position: '0300', usage: M }

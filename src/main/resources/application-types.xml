@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="contactdata" format="json">
+      <types:shape format="weave" example="examples/test.json"><![CDATA[%dw 2.0
+
+type contactdata = Array<{|  firstName: String,   lastName: String,   email: String,   mobile: String|}> {"example": "[{\\\"firstName\\\":\\\"Jihn\\\",\\\"lastName\\\":\\\"Jahn\\\",\\\"email\\\":\\\"Jihn.Jahn@gmail.com\\\",\\\"mobile\\\":\\\"8807686557\\\"},{\\\"firstName\\\":\\\"Jihn12\\\",\\\"lastName\\\":\\\"Jahn12\\\",\\\"email\\\":\\\"Jihn.Jahn12@gmail.com\\\",\\\"mobile\\\":\\\"8807686558\\\"},{\\\"firstName\\\":\\\"Jihn23\\\",\\\"lastName\\\":\\\"Jahn23\\\",\\\"email\\\":\\\"Jihn.Jahn23@gmail.com\\\",\\\"mobile\\\":\\\"8807686559\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="x12schema" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="edi_json_schema" format="json">
+      <types:shape format="weave" example="examples/ediexample-1.json"><![CDATA[%dw 2.0
+
+type edi_json_schema = {|
+  BillingCountry: String, 
+  BillingCity: String, 
+  BillingState: String, 
+  AccountNumber: String, 
+  Reciever_date: String, 
+  Billing_Country: String, 
+  Billing_City: String, 
+  Billing_State: String, 
+  Account_Number: String, 
+  Name_person: String
+|} {"example": "{\\\"BillingCountry\\\":\\\"Marguer\\\",\\\"BillingCity\\\":\\\"Ha\\\",\\\"BillingState\\\":\\\"Em\\\",\\\"AccountNumber\\\":\\\"20\\\",\\\"Reciever_date\\\":\\\"2012-04-21T18:25:43-05:00\\\",\\\"Billing_Country\\\":\\\"gf\\\",\\\"Billing_City\\\":\\\"na\\\",\\\"Billing_State\\\":\\\"mau\\\",\\\"Account_Number\\\":\\\"30\\\",\\\"Name_person\\\":\\\"hs\\\"}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#1822bb6d-00b1-460f-97aa-4c07f2c591af">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="contactdata"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#eb23384f-cf07-4473-b4c7-80d7e6afc2d2">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="edi_json_schema"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

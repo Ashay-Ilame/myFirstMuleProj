@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:ftp="http://www.mulesoft.org/schema/mule/ftp"
+	xmlns:x12="http://www.mulesoft.org/schema/mule/x12"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:twilio-connector="http://www.mulesoft.org/schema/mule/twilio-connector" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/twilio-connector http://www.mulesoft.org/schema/mule/twilio-connector/current/mule-twilio-connector.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/x12 http://www.mulesoft.org/schema/mule/x12/current/mule-x12.xsd
+http://www.mulesoft.org/schema/mule/ftp http://www.mulesoft.org/schema/mule/ftp/current/mule-ftp.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="c2cff1a2-65fc-438c-91f9-3ee7879ae9ff">
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<twilio-connector:config name="Twilio_Connector_Config" doc:name="Twilio Connector Config" doc:id="bbbfc35c-98b5-43b3-8607-5455fefc893a" property_username="AC261e266d40cdbc918587f5e0880b0fba" property_password="66058504d2e7ff0f8df60cb2364a03e5" />
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="f9532e2c-9ee1-4216-9579-b6a1f84131d1" >
+		<salesforce:config-with-oauth-connection >
+			<salesforce:oauth-authorization-code consumerKey="3MVG9fe4g9fhX0E7Me1GEhYnG4Q8g3uMzCW3wZwL.XdFmHJch3EL869Zr8uCkAQ0E5dMLN0D9yDJ8E_vxHgh4" consumerSecret="83148BD755C018A42E4A956609901C4208E7C710C4E7B6374E0F51C8FF45E648" />
+			<salesforce:oauth-callback-config listenerConfig="HTTP_Listener_config" callbackPath="/oauth2callback" authorizePath="/authorize" externalCallbackUrl="http://localhost:8081/oauth2callback" />
+		</salesforce:config-with-oauth-connection>
+	</salesforce:sfdc-config>
+	<salesforce:sfdc-config name="Salesforce_Config_Basic" doc:name="Salesforce Config" doc:id="dfac9ee2-1ac1-424d-b053-57e8a5ba0bbd" >
+		<salesforce:basic-connection username="ashay.ilame@apisero.com" password="apiT*8A9brEsero" securityToken="E7U7LMhjnGUkgyYWjaxqsW96" url="https://login.salesforce.com/services/Soap/u/43.0" />
+	</salesforce:sfdc-config>
+	<x12:config name="X12_EDI_Config" doc:name="X12 EDI Config" doc:id="4b012f45-9187-4b71-9c0f-93edfa00ed48" interchangeIdQualifierSelf="ZZ" interchangeIdSelf="Mule" groupIdSelf="DA" interchangeIdQualifierPartner="ZZ" interchangeIdPartner="DP" groupIdPartner="DP" initialInterchangeNumber="0" >
+		<x12:schemas >
+			<x12:schema value="/x12/004050/849.esl" />
+		</x12:schemas>
+	</x12:config>
+	<ftp:config name="FTP_Config" doc:name="FTP Config" doc:id="aac00170-b0c7-423a-ae23-850bf85d623d" >
+		<ftp:connection host="localhost" username="user" password="user"/>
+	</ftp:config>
+	<os:object-store name="Object_store_new" doc:name="Object store" doc:id="fdb7e1db-16d3-44bc-b031-c7e462bcdfc9" maxEntries="10" entryTtl="1" entryTtlUnit="HOURS"/>
+	<flow name="usecase1base64-pdfFlow" doc:id="3a42624f-8553-414c-9fac-316d33e1f20c" >
+		<http:listener doc:name="Listener" doc:id="bae6d085-ec73-4259-bb8f-7972c9b5f9be" config-ref="HTTP_Listener_config" path="/case1" allowedMethods="GET,POST" responseStreamingMode="NEVER"/>
+		<ee:transform doc:name="Transform Message" doc:id="d28c644f-9b86-40ac-b68d-2c0ef3b70331" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Binaries
+output multipart/form-data
+---
+{
+    parts:{
+        base64Content:{
+            headers:{
+                "Content-Type":"application/pdf"
+            },
+            content: fromBase64(payload)
+            },
+        }
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="126cf8a9-c1bd-49c9-9874-35255fe67d7f" mimeType="application/pdf"/>
+		<file:write doc:name="Write" doc:id="8a63d7d3-6377-4c9a-8c8d-fd1d31538959" path="C:\Users\ashayilame\Documents\testSampleFile.pdf"/>
+	</flow>
+	<flow name="splunk" doc:id="adcffde0-da4d-43df-9de2-53715c6ffe94" >
+		<scheduler doc:name="Scheduler" doc:id="f0b98f58-3614-4a75-9f6d-62e868b920a5" >
+			<scheduling-strategy >
+				<fixed-frequency timeUnit="DAYS"/>
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="Logger 29-30" doc:id="b9d9fd50-0d36-4b68-8058-b82528434362" message="Logger 29-30"/>
+	</flow>
+	<flow name="usecase3smsTwilioFlow" doc:id="dfd2c90f-9b92-4db9-9463-6117b81465ee" >
+		<http:listener doc:name="Listener" doc:id="3d9d82dd-8d74-49f5-b703-acacac08d312" config-ref="HTTP_Listener_config" path="/api/twilio/{toNumber}"/>
+		<ee:transform doc:name="Transform Message" doc:id="3ce9d998-b840-43e3-95cc-7fb872eb54ef" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/x-www-form-urlencoded
+---
+{
+    Body: payload,
+    From: "+12674363599",
+    To: "+" ++ attributes.uriParams.toNumber as String
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<twilio-connector:send-message doc:name="Send Message" doc:id="353ace7f-870b-4c93-a72e-870f7a4c2c1c" config-ref="Twilio_Connector_Config" account-sid="AC261e266d40cdbc918587f5e0880b0fba">
+		</twilio-connector:send-message>
+		<ee:transform doc:name="Transform Message" doc:id="284d8c60-ef0a-4e8d-9185-a70ef58b899e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Body : payload.body,
+	From : payload.'to',
+	To : payload.from
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="usecase3shortFlow" doc:id="d6b28184-92ea-4fd6-a052-9d6e5bbcd90f" >
+		<http:listener doc:name="Listener" doc:id="f86ea795-4e21-4aaf-8d97-c12d75398dbc" config-ref="HTTP_Listener_config" path="/case3"/>
+		<ee:transform doc:name="Transform Message" doc:id="ebe2b603-074f-4637-815d-4f47c3054dc5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    Body: "Hello this is Mulesy team and sending you test message",
+    From: "+12674363599",
+    To: "+918805686337"
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<twilio-connector:send-message doc:name="Send Message" doc:id="f98c51c9-5607-4725-a13c-168650fb7f30" config-ref="Twilio_Connector_Config" account-sid="AC261e266d40cdbc918587f5e0880b0fba"/>
+		<ee:transform doc:name="Transform Message" doc:id="c0f699ed-e8e1-4bd8-a706-1194cfda98fe" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="usecase1base64-pdfFlow1" doc:id="dc1a44cf-e779-4f3b-8c73-4b776de129d9" >
+		<http:listener doc:name="Listener" doc:id="af97b018-2608-41d1-92af-4f1525af0204" config-ref="HTTP_Listener_config" path="/accounts"/>
+		<os:retrieve doc:name="Retrieve" doc:id="ffc588bb-c407-46ef-9fdb-ce2896cd0b5d" key="lastUpdateTimeStampKey" objectStore="Object_store_new" target="lastUpdateTimeStamp" targetValue="#[payload as String]">
+			<os:default-value ><![CDATA[#[now() - |P1D| as String]]]></os:default-value>
+		</os:retrieve>
+		<salesforce:query doc:id="64a9cb28-6e61-46e5-989b-cf01870ac5cc" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query><![CDATA[select ID,name,LastModifiedDate from Contact 
+where LastModifiedDate > :lastUpdateTimeStamp]]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"lastUpdateTimeStamp" : vars.lastUpdateTimeStamp
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<os:store doc:name="Store" doc:id="eca75266-3ffa-4593-b7aa-79124c967e53" key="lastUpdateTimeStampKey" objectStore="Object_store_new">
+			<os:value ><![CDATA[#[now()]]]></os:value>
+		</os:store>
+		<ee:transform doc:name="Transform Message" doc:id="cbfe5833-4f59-4ddf-bad5-4954abe5c7c1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="bd0eba67-ba85-47ae-b236-140ebebd4392" >
+			<when expression="#[payload != []]">
+				<file:write doc:name="Write" doc:id="ebcaa9d2-f00f-4f2b-b248-64bdd321ba23" path="C:\Users\ashayilame\AnypointStudio\studio-workspace\usecase1base64-pdf\updated_records.txt" mode="APPEND" />
+			</when>
+			<otherwise >
+				<set-payload value='"No new Records"' doc:name="Set Payload" doc:id="0d948003-68c8-4b55-93dd-07c3482c27d8" />
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="usecase1base64-pdfFlow2" doc:id="72cf738c-99e3-48a5-af68-5c95e3bf4548" >
+		<http:listener doc:name="Listener" doc:id="d9784e11-cbbd-4340-bdcb-80a153317096" config-ref="HTTP_Listener_config" path="/contact" allowedMethods="PUT"/>
+		<ee:transform doc:name="Transform Message" doc:id="1822bb6d-00b1-460f-97aa-4c07f2c591af" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload map(items, index) -> 
+{
+	FirstName : items.firstName,
+	LastName : items.lastName,
+	Email : items.email,
+	Phone : items.mobile
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:upsert doc:name="Upsert" doc:id="db266b01-269a-4f8c-bf68-20b88e1cb8cf" config-ref="Salesforce_Config_Basic" objectType="Contact" externalIdFieldName="Email"/>
+		<ee:transform doc:name="Transform Message" doc:id="a4de80c8-9f9a-40ba-b7d6-63773fff3a5b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="ba082b9f-895b-4a86-8ef0-2b3cd29528ea" message="#[payload]"/>
+	</flow>
+	<flow name="usecase1base64-pdfFlow3" doc:id="eedcc819-a931-4562-a49a-e4c8a9c53867" >
+		<http:listener doc:name="Listener" doc:id="e11ff586-06ec-4b3e-8970-0da7bc2057c0" config-ref="HTTP_Listener_config" path="/case6"/>
+		<ee:transform doc:name="Transform Message" doc:id="eb23384f-cf07-4473-b4c7-80d7e6afc2d2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/dw
+---
+{
+	"TransactionSets": null,
+	Delimiters: "*>U~",
+	TransactionSets: {
+		v004050: {
+			"849": [{
+				Interchange: {
+					ISA12: "dfggt"
+				},
+				Group: {
+					GS01: payload.BillingCountry,
+					GS02: payload.BillingCity,
+					GS03: payload.BillingState,
+					GS04: payload.Reciever_date as Date,
+					GS05: payload.AccountNumber as Number,
+					GS06: payload.Account_Number as Number,
+					GS07: payload.Billing_Country,
+					GS08: payload.Billing_Country
+				},
+				SetHeader: {
+					ST01: payload.BillingCountry,
+					ST02: payload.BillingCity,
+					ST03: payload.BillingState
+				},
+				Heading: {
+					"0200_BRC": {
+						BRC01: payload.AccountNumber,
+						BRC02: payload.Reciever_date as Date,
+						BRC03: payload.Billing_State,
+						BRC04: payload.Billing_City,
+						BRC05: payload.Account_Number as Number
+					}
+				},
+				Detail: {
+				},
+				Summary: {
+					"0100_CTT": {
+						CTT01: payload.AccountNumber as Number,
+						CTT02: payload.Account_Number as Number,
+						CTT03: payload.Account_Number as Number,
+						CTT04: payload.Name_person,
+						CTT05: payload.Account_Number as Number,
+						CTT06: payload.Billing_City,
+						CTT07: payload.Name_person
+					},
+					"0200_AMT": [{
+						AMT01: payload.Name_person,
+						AMT02: payload.Account_Number as Number,
+						AMT03: "9"
+					}]
+				}
+			}]
+		}
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="fb4eeb18-3cb5-404c-8ab4-74857ba39a13" />
+		<x12:write doc:name="Write" doc:id="367c8d80-ae11-498c-b0a1-e9806a477d0a" config-ref="X12_EDI_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="330dc3a5-86fb-4666-9ee4-1cf5a74d0555" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="c1731aeb-0c17-4e65-9d0f-e4249508b1b5" />
+		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="e3ac75df-8340-49e2-ab80-3ea9d5a11a08" />
+		<ftp:write doc:id="be8e32d6-9d59-4ff0-80c7-1cfbd0513e2c" config-ref="FTP_Config" path="output.csv"/>
+	</flow>
+</mule>
